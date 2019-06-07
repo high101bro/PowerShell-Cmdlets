@@ -1,0 +1,2 @@
+This file Contains an embedded PowerShell script within an Alternate Data Stream.
+Two notepad.exe windows should appear.

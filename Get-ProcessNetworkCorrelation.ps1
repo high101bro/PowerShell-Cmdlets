@@ -1,23 +1,8 @@
-﻿<#
-.Synopsis
-    Gets System Processes, each enriched with additional information such as file hashes and network connections.
-
-#>
-
-param (
-    [switch]$ExcludeLocalConnections
-)
-$ProcessesWMI = Get-WmiObject -Class Win32_Process  | Sort-Object -Property ProcessId
-$ProcessesPS  = Get-Process | Sort-Object -Property Id
-if ($ExcludeLocalConnections) {
-    $NetworkConnections = Get-NetTCPConnection | Where-Object {($_.RemoteAddress -ne '0.0.0.0') -and ($_.RemoteAddress -ne '::') -and ($_.RemoteAddress -ne '::1') -and ($_.RemoteAddress -ne '127.0.0.1')}
-}
-else {$NetworkConnections = Get-NetTCPConnection}
-
+﻿#$ErrorActionPreference="SilentlyContinue"
 
 # Create Hashtable of all network processes and their PIDs
 $Connections = @{}
-foreach($Connection in $NetworkConnections) {
+foreach($Connection in Get-NetTCPConnection) {
     $connStr = "[$($Connection.State)] " + "$($Connection.LocalAddress)" + ":" + "$($Connection.LocalPort)" + " <--> " + "$($Connection.RemoteAddress)" + ":" + "$($Connection.RemotePort)`n"
     if($Connection.OwningProcess -in $Connections.keys) {
         if($connStr -notin $Connections[$Connection.OwningProcess]) {
@@ -28,6 +13,9 @@ foreach($Connection in $NetworkConnections) {
         $Connections[$Connection.OwningProcess] = $connStr
     }
 }
+$ProcessesWMI       = Get-WmiObject -Class Win32_Process 
+$ProcessesPS        = Get-Process
+$NetworkConnections = Get-NetTCPConnection
 
 $ProcessCount   = ($ProcessesWMI).count
 $IterationCount = 0
