@@ -20,7 +20,9 @@ if ($IncludeLocalConnections) {
 else {
     $Connections = Get-NetTCPConnection `
     | Where-Object  {($_.RemoteAddress -ne '0.0.0.0') `
-                -and ($_.RemoteAddress -ne '::')}
+                -and ($_.RemoteAddress -ne '127.0.0.1') `
+                -and ($_.RemoteAddress -ne '::') `
+                -and ($_.RemoteAddress -ne '::1')}
 }
 
 $Processes   = Get-WmiObject -Class Win32_Process

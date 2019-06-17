@@ -106,7 +106,7 @@
 
 param (
     [string[]]$ComputerName = 'localhost',
-    [string[]]$Directory = $(Get-Location),
+    [string[]]$Directory = ".\",
     [switch]$ExcludeZoneIdentifier,
     [switch]$ExtractADStoFile,
     [switch]$Recurse
