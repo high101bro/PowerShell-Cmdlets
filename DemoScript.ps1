@@ -1,6 +1,6 @@
-﻿Set-Content -Path "$env:userprofile\desktop\ADS_File_with_PowerShell_Script.txt"-value "$(Get-Process | Out-String; Get-Service | Out-String)"
-
-Foreach ($n in (1..2)) { Start-Process notepad.exe "$env:userprofile\desktop\ADS_File_with_PowerShell_Script.txt" }
+﻿c:\windows\system32\cmd.exe /c tasklist
+#Set-Content -Path "$env:userprofile\desktop\ADS_File_with_PowerShell_Script.txt"-value "$(Get-Process | Out-String; Get-Service | Out-String)"
+#Foreach ($n in (1..2)) { Start-Process notepad.exe "$env:userprofile\desktop\ADS_File_with_PowerShell_Script.txt" }
 <#
 Get-WmiObject -Class Win32_ComputerSystem
 Get-WmiObject -Class Win32_UserAccount
