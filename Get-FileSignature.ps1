@@ -1,11 +1,25 @@
 ﻿<#
-.SYNOPSIS
+.Synopsis
     Obtains file signature information on file, such as MZ if it's an executable.
 
-.LINKS
-    https://mcpmag.com/articles/2018/07/25/file-signatures-using-powershell.aspx
+.Description
+    The cmdlet all allows you to view signature information of file which could reveal things like executables with different file extensions.
+
+.Parameter Path
+    Enter one or more file paths.
+
+.Example
+    The following examples shows how to view the basic signature of a file and it's output.
+
+    Get-FileSignature -Path C:\Windows\System32\cmd.exe
+        Name           : cmd.exe
+        FullName       : C:\Windows\System32\cmd.exe
+        HexSignature   : 4D5A
+        ASCIISignature : MZ
+        Length         : 273920
+        Extension      : exe
 #>
-[CmdletBinding()]
+
 Param(
     [Parameter(
         Position=0,

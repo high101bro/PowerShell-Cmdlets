@@ -37,24 +37,47 @@
 #>
 param(
     [string[]]$ComputerName = 'localhost',
-    [string[]]$IP,
+    [string[]]$IP = "127.0.0.1",
     [string[]]$Port
 )
 Foreach ($Computer in $ComputerName) {
     Invoke-Command -ComputerName $Computer -ScriptBlock {
-        param ($IP,$Port,$Computer)
+        param (
+            $IP,
+            $Port,
+            $Computer
+        )
         $Connections = Get-NetTCPConnection
-        #$match = [Ordered]@{}
-        #$Count = 1
+        $Processes   = Get-WmiObject -Class Win32_Process
+        $ConnectionsFound = @()        
+
         foreach ($Conn in $Connections) { 
             if (($Conn.RemoteAddress -in $IP) -or ($Conn.RemotePort -in $Port)) { 
-                Write-Host "$Computer `t " -f Red -NoNewline
-                Write-Host  "$($conn.RemoteAddress):$($conn.RemotePort)" -f yellow
-                #"{0,-20} {1,-20}:{2,-20}" -f $Computer,$conn.RemoteAddress,$conn.RemotePort
-                #$match += @{ $("Connection $Count") = "$($Conn.RemoteAddress):$($Conn.RemotePort)" }
-                #$Count++
+                $Count++
+                
+                foreach ($Proc in $Processes) {
+                    if ($Conn.OwningProcess -eq $Proc.ProcessId) {
+                        $Conn | Add-Member -MemberType NoteProperty -Name 'Duration' -Value $((New-TimeSpan -Start ($Conn.CreationTime)).ToString())
+                        $Conn | Add-Member -MemberType NoteProperty -Name 'ParentPID' -Value $Proc.ParentProcessId
+                        $Conn | Add-Member -MemberType NoteProperty -Name 'ProcessName' -Value $Proc.Name
+                        $Conn | Add-Member -MemberType NoteProperty -Name 'CommandLine' -Value $Proc.CommandLine
+                    }
+                }
+                $ConnectionsFound += [PSCustomObject]@{
+                    PSComputerName  = $Computer
+                    LocalAddress    = $conn.LocalAddress
+                    LocalPort       = $conn.LocalPort
+                    RemoteAddress   = $conn.RemoteAddress
+                    RemotePort      = $conn.RemotePort
+                    State           = $conn.State
+                    Duration        = $((New-TimeSpan -Start ($Conn.CreationTime)).ToString())
+                    ParentPID       = $conn.ParentPID
+                    ProcessID       = $conn.OwningProcess
+                    ProcessName     = $conn.ProcessName
+                    CommandLine     = $Proc.CommandLine
+                }
             }
         }
-        #return [PSCustomObject]$match
+        return $ConnectionsFound
     } -ArgumentList @($IP,$Port,$Computer)
 }

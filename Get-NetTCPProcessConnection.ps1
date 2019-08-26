@@ -38,6 +38,6 @@ ForEach ($Conn in $Connections) {
 }
 
 return $Connections `
-    | Select-Object -Property RemoteAddress, RemotePort, OwningProcess, ProcessName, CreationTime, CommandLine `
+    | Select-Object -Property PScomputername, RemoteAddress, RemotePort, OwningProcess, ProcessName, CreationTime, CommandLine `
     | Sort-Object -Property ProcessName `
     | Format-Table -AutoSize
