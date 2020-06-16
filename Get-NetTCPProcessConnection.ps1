@@ -1,33 +1,47 @@
-﻿<#
-
-    Version        : v1.0
-    Author         : high101bro
-    Email          : high101bro@gmail.com
-    Website        : https://github.com/high101bro
-
-"What is the Difference Between 127.0.0.1 and 0.0.0.0?
-    127.0.0.1 is the loopback address (also known as localhost).
-    0.0.0.0 is a non-routable meta-address used to designate an invalid, unknown, or non-applicable target (a ‘no particular address’ place holder).
-    :: is an unspecified address, 0:0:0:0:0:0:0:0 (“::” in compressed form) is used to indicate an unknown address.
-"
-#>
-param(
-    [Switch]$IncludeLocalConnections
-)
-if ($IncludeLocalConnections) {
-    $Connections = Get-NetTCPConnection
-}
-else {
-    $Connections = Get-NetTCPConnection `
-    | Where-Object  {($_.RemoteAddress -ne '0.0.0.0') `
-                -and ($_.RemoteAddress -ne '127.0.0.1') `
-                -and ($_.RemoteAddress -ne '::') `
-                -and ($_.RemoteAddress -ne '::1')}
-}
+$ErrorActionPreference = 'SilentlyContinue'
 
 $Processes   = Get-WmiObject -Class Win32_Process
 
-ForEach ($Conn in $Connections) {
+$ParameterSets = (Get-Command Get-NetTCPConnection).ParameterSets | Select -ExpandProperty Parameters
+if (($ParameterSets | Foreach {$_.name}) -contains 'OwningProcess') {
+    $NetworkConnections = Get-NetTCPConnection
+}
+else {
+    $NetworkConnections = netstat -nao -p TCP
+    $NetStat = Foreach ($line in $NetworkConnections[4..$NetworkConnections.count]) {
+        $line = $line -replace '^\s+',''
+        $line = $line -split '\s+'
+        $properties = @{
+            Protocol      = $line[0]
+            LocalAddress  = ($line[1] -split ":")[0]
+            LocalPort     = ($line[1] -split ":")[1]
+            RemoteAddress = ($line[2] -split ":")[0]
+            RemotePort    = ($line[2] -split ":")[1]
+            State         = $line[3]
+            ProcessId     = $line[4]
+        }
+        $Connection = New-Object -TypeName PSObject -Property $properties
+        $proc       = Get-WmiObject -query ('select * from win32_process where ProcessId="{0}"' -f $line[4])
+        $Connection | Add-Member -MemberType NoteProperty OwningProcess $proc.ProcessId
+        $Connection | Add-Member -MemberType NoteProperty ParentProcessId $proc.ParentProcessId
+        $Connection | Add-Member -MemberType NoteProperty Name $proc.Caption
+        $Connection | Add-Member -MemberType NoteProperty ExecutablePath $proc.ExecutablePath
+        $Connection | Add-Member -MemberType NoteProperty CommandLine $proc.CommandLine
+        $Connection | Add-Member -MemberType NoteProperty PSComputerName $env:COMPUTERNAME
+        if ($Connection.ExecutablePath -ne $null -AND -NOT $NoHash) {
+            $MD5 = New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
+            $hash = [System.BitConverter]::ToString($MD5.ComputeHash([System.IO.File]::ReadAllBytes($proc.ExecutablePath)))
+            $Connection | Add-Member -MemberType NoteProperty MD5 $($hash -replace "-","")
+        }
+        else {
+            $Connection | Add-Member -MemberType NoteProperty MD5 $null
+        }
+        $Connection
+    }
+    $NetworkConnections = $NetStat | Select-Object -Property PSComputerName,Protocol,LocalAddress,LocalPort,RemoteAddress,RemotePort,State,Name,OwningProcess,ProcessId,ParentProcessId,MD5,ExecutablePath,CommandLine
+}
+
+ForEach ($Conn in $NetworkConnections) {
     foreach ($Proc in $Processes) {
         if ($Conn.OwningProcess -eq $Proc.ProcessId) {
             $Conn | Add-Member -MemberType NoteProperty -Name 'ProcessName' -Value $Proc.Name
@@ -36,8 +50,6 @@ ForEach ($Conn in $Connections) {
         }
     }        
 }
-
-return $Connections `
-    | Select-Object -Property PScomputername, RemoteAddress, RemotePort, OwningProcess, ProcessName, CreationTime, CommandLine `
-    | Sort-Object -Property ProcessName `
-    | Format-Table -AutoSize
+$NetworkConnections `
+    | Select-Object -Property @{name="PSComputerName";expression={$env:COMPUTERNAME}}, RemoteAddress, RemotePort, OwningProcess, ProcessName, CreationTime, CommandLine `
+    | Sort-Object -Property ProcessName

@@ -1,7 +1,8 @@
-﻿
+
 ###################
 # PoSh-ACME Light #
 ###################
+[reflection.assembly]::loadwithpartialname("System.Windows.Forms") | Out-Null
 
 $form = New-Object Windows.Forms.Form -Property @{
     Name          = "EventLog DateTime Picker"

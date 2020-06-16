@@ -1,15 +1,10 @@
-﻿<#
-
-
-#>
-
-param(
+﻿param(
     [string]$Path = ".\",
     [switch]$Recurse,
     [switch]$UrlHttpHttps,
     [switch]$Url,
     [switch]$IP,
-[switch]$PhoneAlphaNumeric,
+    [switch]$PhoneAlphaNumeric,
     [switch]$PhoneNumber,
     [switch]$Social,
     [switch]$SocialStrict,
@@ -20,7 +15,7 @@ param(
     [Switch]$AllNotStrict,
     [Switch]$AllStrict
 )
-$files = GCI -Path $Path
+$files = Get-ChildItem -Path $Path | Where-Object { -Not $_.PsIsContainer}
 foreach($file in $files){
     $FileContent = Get-Content -Path $file.fullname
 
